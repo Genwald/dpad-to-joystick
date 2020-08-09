@@ -1,65 +1,40 @@
 #include "main.hpp"
 #include <limits>
 
+void dpadToJoystick(nn::hid::NpadHandheldState *state) {
+    if(state->Buttons & nn::hid::KEY_DLEFT) {
+        state->Buttons &= ~nn::hid::KEY_DLEFT;
+        state->LStickX = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DRIGHT) {
+        state->Buttons &= ~nn::hid::KEY_DRIGHT;
+        state->LStickX = std::numeric_limits<s32>::max();
+    }
+    if(state->Buttons & nn::hid::KEY_DDOWN) {
+        state->Buttons &= ~nn::hid::KEY_DDOWN;
+        state->LStickY = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DUP) {
+        state->Buttons &= ~nn::hid::KEY_DUP;
+        state->LStickY = std::numeric_limits<s32>::max();
+    }
+}
+
 void (*originalNpadStateHandheldFunc)(nn::hid::NpadHandheldState *state, u32 const &controllerID);
 void (*originalNpadStateJoyFunc)(nn::hid::NpadJoyDualState *state, u32 const &controllerID);
 void (*originalNpadStateFullKeyFunc)(nn::hid::NpadFullKeyState *state, u32 const &controllerID);
+
 void GetNpadHandheldStateHook(nn::hid::NpadHandheldState *state, u32 const &controllerID) {
     originalNpadStateHandheldFunc(state, controllerID);
-    if(state->Buttons & nn::hid::KEY_DLEFT) {
-        state->Buttons &= ~nn::hid::KEY_DLEFT;
-        state->LStickX = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DRIGHT) {
-        state->Buttons &= ~nn::hid::KEY_DRIGHT;
-        state->LStickX = std::numeric_limits<s32>::max();
-    }
-    if(state->Buttons & nn::hid::KEY_DDOWN) {
-        state->Buttons &= ~nn::hid::KEY_DDOWN;
-        state->LStickY = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DUP) {
-        state->Buttons &= ~nn::hid::KEY_DUP;
-        state->LStickY = std::numeric_limits<s32>::max();
-    }
+    dpadToJoystick(state);
 }
 void GetNpadJoyStateHook(nn::hid::NpadJoyDualState *state, u32 const &controllerID) {
     originalNpadStateJoyFunc(state, controllerID);
-    if(state->Buttons & nn::hid::KEY_DLEFT) {
-        state->Buttons &= ~nn::hid::KEY_DLEFT;
-        state->LStickX = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DRIGHT) {
-        state->Buttons &= ~nn::hid::KEY_DRIGHT;
-        state->LStickX = std::numeric_limits<s32>::max();
-    }
-    if(state->Buttons & nn::hid::KEY_DDOWN) {
-        state->Buttons &= ~nn::hid::KEY_DDOWN;
-        state->LStickY = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DUP) {
-        state->Buttons &= ~nn::hid::KEY_DUP;
-        state->LStickY = std::numeric_limits<s32>::max();
-    }
+    dpadToJoystick(state);
 }
 void GetNpadFullKeyStateHook(nn::hid::NpadFullKeyState *state, u32 const &controllerID) {
     originalNpadStateFullKeyFunc(state, controllerID);
-    if(state->Buttons & nn::hid::KEY_DLEFT) {
-        state->Buttons &= ~nn::hid::KEY_DLEFT;
-        state->LStickX = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DRIGHT) {
-        state->Buttons &= ~nn::hid::KEY_DRIGHT;
-        state->LStickX = std::numeric_limits<s32>::max();
-    }
-    if(state->Buttons & nn::hid::KEY_DDOWN) {
-        state->Buttons &= ~nn::hid::KEY_DDOWN;
-        state->LStickY = std::numeric_limits<s32>::min();
-    }
-    if(state->Buttons & nn::hid::KEY_DUP) {
-        state->Buttons &= ~nn::hid::KEY_DUP;
-        state->LStickY = std::numeric_limits<s32>::max();
-    }
+    dpadToJoystick(state);
 }
 
 int main() {
