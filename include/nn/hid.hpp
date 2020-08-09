@@ -91,6 +91,7 @@ namespace nn
         };
         // Seems to be the same?
         struct NpadFullKeyState : NpadHandheldState {};
+        struct NpadJoyDualState : NpadHandheldState {};
         struct NpadStyleTag;
 
         struct ControllerSupportArg {

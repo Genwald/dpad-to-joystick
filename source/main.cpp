@@ -1,41 +1,85 @@
 #include "main.hpp"
+#include <limits>
 
-// function definition of the original function. Function pointer is given by A64HookFunction when used
 void (*originalNpadStateHandheldFunc)(nn::hid::NpadHandheldState *state, u32 const &controllerID);
-// The function to be called in place of the function that is hooked
-// You can choose to call the original function at the beginning, the end, or not at all
-void GetNpadStateHandheldHook(nn::hid::NpadHandheldState *state, u32 const &controllerID) {
+void (*originalNpadStateJoyFunc)(nn::hid::NpadJoyDualState *state, u32 const &controllerID);
+void (*originalNpadStateFullKeyFunc)(nn::hid::NpadFullKeyState *state, u32 const &controllerID);
+void GetNpadHandheldStateHook(nn::hid::NpadHandheldState *state, u32 const &controllerID) {
     originalNpadStateHandheldFunc(state, controllerID);
-    if(state->Buttons & nn::hid::KEY_A) {
-        skyline::TcpLogger::SendRaw("[NpadStateHook] A button pressed\n");
+    if(state->Buttons & nn::hid::KEY_DLEFT) {
+        state->Buttons &= ~nn::hid::KEY_DLEFT;
+        state->LStickX = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DRIGHT) {
+        state->Buttons &= ~nn::hid::KEY_DRIGHT;
+        state->LStickX = std::numeric_limits<s32>::max();
+    }
+    if(state->Buttons & nn::hid::KEY_DDOWN) {
+        state->Buttons &= ~nn::hid::KEY_DDOWN;
+        state->LStickY = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DUP) {
+        state->Buttons &= ~nn::hid::KEY_DUP;
+        state->LStickY = std::numeric_limits<s32>::max();
+    }
+}
+void GetNpadJoyStateHook(nn::hid::NpadJoyDualState *state, u32 const &controllerID) {
+    originalNpadStateJoyFunc(state, controllerID);
+    if(state->Buttons & nn::hid::KEY_DLEFT) {
+        state->Buttons &= ~nn::hid::KEY_DLEFT;
+        state->LStickX = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DRIGHT) {
+        state->Buttons &= ~nn::hid::KEY_DRIGHT;
+        state->LStickX = std::numeric_limits<s32>::max();
+    }
+    if(state->Buttons & nn::hid::KEY_DDOWN) {
+        state->Buttons &= ~nn::hid::KEY_DDOWN;
+        state->LStickY = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DUP) {
+        state->Buttons &= ~nn::hid::KEY_DUP;
+        state->LStickY = std::numeric_limits<s32>::max();
+    }
+}
+void GetNpadFullKeyStateHook(nn::hid::NpadFullKeyState *state, u32 const &controllerID) {
+    originalNpadStateFullKeyFunc(state, controllerID);
+    if(state->Buttons & nn::hid::KEY_DLEFT) {
+        state->Buttons &= ~nn::hid::KEY_DLEFT;
+        state->LStickX = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DRIGHT) {
+        state->Buttons &= ~nn::hid::KEY_DRIGHT;
+        state->LStickX = std::numeric_limits<s32>::max();
+    }
+    if(state->Buttons & nn::hid::KEY_DDOWN) {
+        state->Buttons &= ~nn::hid::KEY_DDOWN;
+        state->LStickY = std::numeric_limits<s32>::min();
+    }
+    if(state->Buttons & nn::hid::KEY_DUP) {
+        state->Buttons &= ~nn::hid::KEY_DUP;
+        state->LStickY = std::numeric_limits<s32>::max();
     }
 }
 
-Result (*originalOpenFileFunc)(nn::fs::FileHandle *file, char const* path, s32 mode);
-Result openFileHook(nn::fs::FileHandle *file, char const* path, s32 mode) {
-    skyline::TcpLogger::SendRawFormat("[openFileHook] opened file %s\n", path);
-    return originalOpenFileFunc(file, path, mode);
-}
-
 int main() {
-        skyline::TcpLogger::SendRaw("HELLO FROM PLUGIN\n");
-
-        // look up the function by symbol because it is an overloaded function
-        u64 GetNpadStateHandheldAddr;
-        nn::ro::LookupSymbol(&GetNpadStateHandheldAddr, "_ZN2nn3hid12GetNpadStateEPNS0_17NpadHandheldStateERKj");
-        // Hook to log when the A button is pressed in handheld state
-        A64HookFunction(
-            reinterpret_cast<void*>(GetNpadStateHandheldAddr),
-            reinterpret_cast<void*>(GetNpadStateHandheldHook),
-            (void**) &originalNpadStateHandheldFunc
-        );
-
-        // This function has no overloads, so we don't need to look it up by its symbol
-        // Hook to log the name of every opened file
-        A64HookFunction(
-            reinterpret_cast<void*>(nn::fs::OpenFile),
-            reinterpret_cast<void*>(openFileHook),
-            (void**) &originalOpenFileFunc
-        );
-
+    u64 GetNpadStateAddr;
+    nn::ro::LookupSymbol(&GetNpadStateAddr, "_ZN2nn3hid12GetNpadStateEPNS0_17NpadHandheldStateERKj");
+    A64HookFunction(
+        reinterpret_cast<void*>(GetNpadStateAddr),
+        reinterpret_cast<void*>(GetNpadHandheldStateHook),
+        (void**) &originalNpadStateHandheldFunc
+    );
+    nn::ro::LookupSymbol(&GetNpadStateAddr, "_ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyDualStateERKj");
+    A64HookFunction(
+        reinterpret_cast<void*>(GetNpadStateAddr),
+        reinterpret_cast<void*>(GetNpadJoyStateHook),
+        (void**) &originalNpadStateJoyFunc
+    );
+    nn::ro::LookupSymbol(&GetNpadStateAddr, "_ZN2nn3hid12GetNpadStateEPNS0_16NpadFullKeyStateERKj");
+    A64HookFunction(
+        reinterpret_cast<void*>(GetNpadStateAddr),
+        reinterpret_cast<void*>(GetNpadFullKeyStateHook),
+        (void**) &originalNpadStateFullKeyFunc
+    );
 }

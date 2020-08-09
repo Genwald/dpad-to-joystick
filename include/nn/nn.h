@@ -21,6 +21,7 @@ void nninitStartup();
 
 void _init();
 void _fini();
+void _Exit(int _status);
 void __nnDetailNintendoSdkRuntimeObjectFileRefer();
 void __nnDetailNintendoSdkRuntimeObjectFile();
 void __nnDetailNintendoSdkNsoFileRefer();

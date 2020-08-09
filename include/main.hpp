@@ -18,6 +18,7 @@
 #include "nn/prepo.h"
 #include "nn/hid.hpp"
 #include "nvn/pfnc.h"
+#include "nn/hid.hpp"
 
 #include "skyline/inlinehook/And64InlineHook.hpp"
 #include "skyline/logger/TcpLogger.hpp"
